@@ -17,9 +17,8 @@ public class Test_1 {
         dao.addUser("Alina", "Kvochkina");
         dao.addUser("Petr", "Sidorov");
         dao.addUser("Maksim", "Smolencev");
-        dao.findUserByName("Petr");
+        System.out.println(dao.findUserByName("Petr"));
         dao.updateSurname("Petr", "Pushkin");
-        dao.showTable();
 
 
         //System.out.println(dao.exampleFunction());

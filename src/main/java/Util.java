@@ -22,7 +22,7 @@ public class Util {
             fis = new FileInputStream(CONFIGURATION_FILE_NAME);
             prop = new Properties();
             prop.load(fis);
-            LOGGER.trace("Properties file was successfully read.");
+            LOGGER.info("Properties file was successfully read.");
         } catch(Exception e) {
             LOGGER.error("Error: properties file not found.", e);
         } finally {
