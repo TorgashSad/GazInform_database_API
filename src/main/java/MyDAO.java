@@ -19,6 +19,10 @@ public class MyDAO {
     private final String user;
     private final String password;
 
+    public Connection getConnection() {
+        return connection;
+    }
+
     private Connection connection;
 
     public MyDAO(String url, String user, String password) {
@@ -90,47 +94,35 @@ public class MyDAO {
      * @param name user name
      * @param surname user surname
      */
-    public int addUser(String name, String surname) {
-        int row_count=0;
+    public void addUser(String name, String surname) {
         String SQL = "INSERT INTO gazinform_users(name, surname) "
                 + "VALUES(?,?)";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
             pstmt.setString(1, name);
             pstmt.setString(2, surname);
-            row_count=pstmt.executeUpdate();
+            pstmt.executeUpdate();
         }
         catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        return row_count;
     }
 
-//    /**
-//     * Prints the whole table into console
-//     */
-//    public void showTable() {
-//        String SQL = "SELECT * FROM gazinform_users";
-//
-//        try (Statement stmt = connection.createStatement();
-//             ResultSet rs = stmt.executeQuery(SQL)) {
-//            // display actor information
-//            LOGGER.info("The full table is:");
-//            ResultSetMetaData rsmd = rs.getMetaData();
-//            for (int i=1; i<=rsmd.getColumnCount();i++)
-//                System.out.print(rsmd.getColumnName(i) + "\t");
-//            System.out.print("\n");
-//            while (rs.next()) {
-//                System.out.println(rs.getString("name") + "\t"
-//                        + rs.getString("surname"));
-//            }
-//        } catch (SQLException ex) {
-//            System.out.println(ex.getMessage());
-//        }
-//    }
+    /**
+     * Returns the whole table "gazinform_users" as a ResultSet
+     */
+    public ResultSet getTable() {
+        String SQL = "SELECT * FROM gazinform_users";
+        ResultSet rs=null;
+        try (Statement stmt = connection.createStatement()) {
+            rs = stmt.executeQuery(SQL);
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return rs;
+    }
 
     /**
      * Connect to the PostgreSQL database
-     * @return a Connection object
      */
     public void connect() {
         Connection conn = null;
@@ -143,5 +135,4 @@ public class MyDAO {
         }
         connection = conn;
     }
-
 }
