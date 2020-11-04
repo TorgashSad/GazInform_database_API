@@ -19,10 +19,6 @@ public class MyDAO {
     private final String user;
     private final String password;
 
-    public Connection getConnection() {
-        return connection;
-    }
-
     private Connection connection;
 
     public MyDAO(String url, String user, String password) {
@@ -31,52 +27,24 @@ public class MyDAO {
         this.password = password;
     }
 
-    /**
-     * Updates the value of surname column for a user specified by name column value
-     * @param name name of a user
-     * @param new_surname new surname for a user
-     * @return row count for a table
-     */
-    public int updateSurname(String name, String new_surname) {
-        int row_count=0;
-        String SQL = "UPDATE gazinform_users "
-                + "SET surname = ?"
-                + "WHERE name = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
-            pstmt.setString(1, new_surname);
-            pstmt.setString(2, name);
-            row_count=pstmt.executeUpdate();
-            LOGGER.info("The user surname successfully updated: " + name + " " + new_surname);
-        } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
-        }
-        return row_count;
+    public Connection getConnection() {
+        return connection;
     }
 
     /**
-     * Finds a user by its user name
-     * @param name the name of the user
-     * @return a LinkedHashMap, where keys a column names and values correspond to a user found
+     * Connect to the PostgreSQL database
      */
-    public Map<String, String> findUserByName(String name) {
-        String SQL = "SELECT * "
-                + "FROM gazinform_users "
-                + "WHERE name = ?";
-        Map<String, String> row = new LinkedHashMap<>();
-
-        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
-            pstmt.setString(1, name);
-            ResultSet rs = pstmt.executeQuery();
-            ResultSetMetaData rsmd = rs.getMetaData();
-            rs.next();
-            for (int i=1; i<=rsmd.getColumnCount();i++)
-                row.put(rsmd.getColumnName(i), rs.getString(rsmd.getColumnName(i)));
-        } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+    public void connect() {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(url, user, password);
+            LOGGER.info("Connected to database successfully.");
+        } catch (SQLException e) {
+            LOGGER.error("Error: connection to database wasn't established", e);
+            System.out.println(e.getMessage());
         }
-        return row;
+        connection = conn;
     }
-
     /**
      * Clears the whole table gazinform_users
      */
@@ -88,21 +56,58 @@ public class MyDAO {
             System.out.println(ex.getMessage());
         }
     }
-
     /**
      * Add a new user into the table gazinform_users
-     * @param name user name
-     * @param surname user surname
+     * @param user a User class object
      */
-    public void addUser(String name, String surname) {
+    public void addUser(User user) {
         String SQL = "INSERT INTO gazinform_users(name, surname) "
                 + "VALUES(?,?)";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
-            pstmt.setString(1, name);
-            pstmt.setString(2, surname);
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getSurname());
             pstmt.executeUpdate();
         }
         catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    /**
+     * Finds a user by its user name
+     * @param name the name of the user
+     * @return a LinkedHashMap, where keys a column names and values correspond to a user found
+     */
+    public User findUserByName(String name) {
+        String SQL = "SELECT * "
+                + "FROM gazinform_users "
+                + "WHERE name = ?";
+        User user = null;
+        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
+            pstmt.setString(1, name);
+            ResultSet rs = pstmt.executeQuery();
+            ResultSetMetaData rsmd = rs.getMetaData();
+            rs.next();
+            user = new User(rs.getString(rsmd.getColumnName(1)), rs.getString(rsmd.getColumnName(2)));
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return user;
+    }
+    /**
+     * Updates the value of surname column for a user specified by name column value
+     * @param name name of a user
+     * @param new_surname new surname for a user
+     */
+    public void updateSurname(String name, String new_surname) {
+        String SQL = "UPDATE gazinform_users "
+                + "SET surname = ?"
+                + "WHERE name = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
+            pstmt.setString(1, new_surname);
+            pstmt.setString(2, name);
+            pstmt.executeUpdate();
+            LOGGER.info("The user surname successfully updated: " + name + " " + new_surname);
+        } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
     }
@@ -119,20 +124,5 @@ public class MyDAO {
             System.out.println(ex.getMessage());
         }
         return rs;
-    }
-
-    /**
-     * Connect to the PostgreSQL database
-     */
-    public void connect() {
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(url, user, password);
-            LOGGER.info("Connected to database successfully.");
-        } catch (SQLException e) {
-            LOGGER.error("Error: connection to database wasn't established", e);
-            System.out.println(e.getMessage());
-        }
-        connection = conn;
     }
 }

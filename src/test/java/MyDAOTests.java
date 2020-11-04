@@ -1,16 +1,19 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.JVM)
 public class MyDAOTests {
     /**
      * Path/name of the configuration file
@@ -21,37 +24,63 @@ public class MyDAOTests {
      */
     private static final Logger LOGGER = LogManager.getLogger(MyDAOTests.class);
 
+    private static final Properties properties = Util.readPropertiesFile(CONFIGURATION_FILE_NAME);
+
+    private static final MyDAO dao = new MyDAO(properties.getProperty("postgreSQL_URL"),
+            properties.getProperty("postgreSQL_User"),
+            properties.getProperty("postgreSQL_Password"));
+
     @Test
     public void connectTest() {
-        Properties properties = Util.readPropertiesFile(CONFIGURATION_FILE_NAME);
-        MyDAO dao = new MyDAO(properties.getProperty("postgreSQL_URL"),
+        //Correct credentials
+        MyDAO localDao = new MyDAO(properties.getProperty("postgreSQL_URL"),
                 properties.getProperty("postgreSQL_User"),
                 properties.getProperty("postgreSQL_Password"));
-        dao.connect();
-        assertNotNull(dao.getConnection());
+        localDao.connect();
+        assertNotNull(localDao.getConnection());
 
         Properties wrongProperties = mock(Properties.class);
         when(wrongProperties.getProperty("postgreSQL_Password")).thenReturn("wrongpassword");
-        dao = new MyDAO(properties.getProperty("postgreSQL_URL"),
+        //INCORRECT credentials
+        localDao = new MyDAO(properties.getProperty("postgreSQL_URL"),
                 properties.getProperty("postgreSQL_User"),
                 wrongProperties.getProperty("postgreSQL_Password"));
-        dao.connect();
-        assertNull(dao.getConnection());
-
+        localDao.connect();
+        assertNull(localDao.getConnection());
     }
 
     @Test
     public void addAndShowUserTest() {
-        Properties properties = Util.readPropertiesFile(CONFIGURATION_FILE_NAME);
-        MyDAO dao = new MyDAO(properties.getProperty("postgreSQL_URL"),
-                properties.getProperty("postgreSQL_User"),
-                properties.getProperty("postgreSQL_Password"));
         dao.connect();
         dao.clearTable();
-        dao.addUser("Maksimum", "Smolencev");
-        Object actual = dao.findUserByName("Maksimum");
-        Map<String, String> expected = Map.of("name", "Maksimum", "surname", "Smolencev");
+        User expected = new User("Maksim", "Smolencev");
+        dao.addUser(expected);
+        Object actual1 = dao.findUserByName("Maksim");
+        assertEquals(actual1, expected);
+
+        Object actual2 = dao.findUserByName("NotMaksim");
+        assertNotEquals(actual2, expected);
+    }
+
+    @Test
+    public void updateSurnameAndShowUserTest() {
+        dao.connect();
+        dao.clearTable();
+        User initial = new User("Alina", "Kvochkina");
+        dao.addUser(initial);
+        dao.updateSurname("Alina", "Kasparova");
+        Object actual = dao.findUserByName("Alina");
+        User expected = new User("Alina", "Kasparova");
         assertEquals(actual, expected);
+    }
+
+    @Test
+    public void getTableTest() {
+        dao.connect();
+        dao.clearTable();
+        Object actual = dao.getTable();
+        assertThat(actual, instanceOf(ResultSet.class));
+        assertNotNull(actual);
     }
 
     public void printRS(ResultSet rs) {
