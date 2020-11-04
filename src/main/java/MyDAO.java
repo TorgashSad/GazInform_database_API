@@ -31,19 +31,22 @@ public class MyDAO {
      * Updates the value of surname column for a user specified by name column value
      * @param name name of a user
      * @param new_surname new surname for a user
+     * @return row count for a table
      */
-    public void updateSurname(String name, String new_surname) {
+    public int updateSurname(String name, String new_surname) {
+        int row_count=0;
         String SQL = "UPDATE gazinform_users "
                 + "SET surname = ?"
                 + "WHERE name = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
             pstmt.setString(1, new_surname);
             pstmt.setString(2, name);
-            pstmt.executeUpdate();
+            row_count=pstmt.executeUpdate();
             LOGGER.info("The user surname successfully updated: " + name + " " + new_surname);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
+        return row_count;
     }
 
     /**
@@ -87,17 +90,19 @@ public class MyDAO {
      * @param name user name
      * @param surname user surname
      */
-    public void addUser(String name, String surname) {
+    public int addUser(String name, String surname) {
+        int row_count=0;
         String SQL = "INSERT INTO gazinform_users(name, surname) "
                 + "VALUES(?,?)";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
             pstmt.setString(1, name);
             pstmt.setString(2, surname);
-            pstmt.executeUpdate();
+            row_count=pstmt.executeUpdate();
         }
         catch (SQLException ex) {
-        System.out.println(ex.getMessage());
+            System.out.println(ex.getMessage());
         }
+        return row_count;
     }
 
 //    /**
