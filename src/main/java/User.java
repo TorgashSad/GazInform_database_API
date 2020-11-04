@@ -1,6 +1,7 @@
 import java.util.Objects;
 
 public class User {
+
     private final String name;
     private final String surname;
 
