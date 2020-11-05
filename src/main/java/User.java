@@ -1,5 +1,9 @@
 import java.util.Objects;
 
+/**
+ * The class describes a User entity. Currently (according to the sudition task), there are only two
+ * fields - name and surname of the user, where name is a primary key
+ */
 public class User {
 
     private final String name;

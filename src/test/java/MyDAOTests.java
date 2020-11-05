@@ -1,8 +1,6 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -10,10 +8,10 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@FixMethodOrder(MethodSorters.JVM)
 public class MyDAOTests {
     /**
      * Path/name of the configuration file
@@ -30,6 +28,9 @@ public class MyDAOTests {
             properties.getProperty("postgreSQL_User"),
             properties.getProperty("postgreSQL_Password"));
 
+    /**
+     * Checks a proper behavior of MyDAO.connect() method with correct and incorrect DB credentials
+     */
     @Test
     public void connectTest() {
         //Correct credentials
@@ -48,7 +49,10 @@ public class MyDAOTests {
         localDao.connect();
         assertNull(localDao.getConnection());
     }
-
+    /**
+     * Adds a user to gazinform_users table and retrieves it back
+     * from the table to check if insert was successful
+     */
     @Test
     public void addAndShowUserTest() {
         dao.connect();
@@ -62,6 +66,10 @@ public class MyDAOTests {
         assertNotEquals(actual2, expected);
     }
 
+    /**
+     * Adds a user to gazinform_users table, updates its surname and retrieves it back
+     * from the table to check if insert and update were successful
+     */
     @Test
     public void updateSurnameAndShowUserTest() {
         dao.connect();
@@ -73,7 +81,9 @@ public class MyDAOTests {
         User expected = new User("Alina", "Kasparova");
         assertEquals(actual, expected);
     }
-
+    /**
+     * Returns a table gazinform_users and checks if it is of ResultSet class and not null
+     */
     @Test
     public void getTableTest() {
         dao.connect();
@@ -83,6 +93,7 @@ public class MyDAOTests {
         assertNotNull(actual);
     }
 
+    //Supplementary method, may be used or completely removed later
     public void printRS(ResultSet rs) {
         LOGGER.info("The full table is:");
         try {
