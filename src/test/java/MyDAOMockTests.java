@@ -37,6 +37,7 @@ public class MyDAOMockTests {
         user = new User("John", "Dorian");
 
         when(pstmt.executeQuery()).thenReturn(rs);
+        when(pstmt.executeUpdate()).thenReturn(1);
         when(rs.getMetaData()).thenReturn(rsmd);
         when(rsmd.getColumnName(1)).thenReturn("name");
         when(rsmd.getColumnName(2)).thenReturn("surname");
@@ -54,7 +55,9 @@ public class MyDAOMockTests {
 
     @Test
     public void addAndShowUserTest() {
-        testDAO.addUser(user);
+        int result = testDAO.addUser(user);
+        assertEquals(1, result);
+
         Optional<User> actual1 = testDAO.findUserByName(user.getName());
         assertEquals(user.getName(), actual1.get().getName());
         assertEquals(user.getSurname(), actual1.get().getSurname());
@@ -62,13 +65,12 @@ public class MyDAOMockTests {
 
     @Test
     public void addUpdateAndShowUserTest() throws SQLException {
-        testDAO.addUser(user);
-        testDAO.updateSurname(user.getName(), "Nairod");
+        int result = testDAO.addUser(user);
+        assertEquals(1, result);
+        result = testDAO.updateSurname(user.getName(), "Nairod");
         verify(pstmt).setString(1,"Nairod");
         verify(pstmt).setString(2,user.getName());
-        verify(pstmt, times(2)).executeUpdate();
-        //Optional<User> actual1 = testDAO.findUserByName(user.getName());
-        //assertEquals(user.getSurname(), actual1.get().getSurname());
+        assertEquals(1, result);
     }
 
 }

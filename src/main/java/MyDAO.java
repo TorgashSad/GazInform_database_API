@@ -35,19 +35,22 @@ public class MyDAO {
     /**
      * Add a new user into the table gazinform_users
      * @param user a not null User class object
+     * @return 1 if a user was added successfully, otherwise 0
      */
-    public void addUser(User user) {
+    public int addUser(User user) {
         Assert.assertNotNull(user);
+        int rowCount=0;
         String SQL = "INSERT INTO gazinform_users(name, surname) "
                 + "VALUES(?,?)";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getSurname());
-            pstmt.executeUpdate();
+            rowCount = pstmt.executeUpdate();
         }
         catch (SQLException ex) {
             LOGGER.error(ex.getMessage());
         }
+        return rowCount;
     }
     /**
      * Finds a user by its user name
@@ -74,18 +77,21 @@ public class MyDAO {
      * Updates the value of surname column for a user specified by name column value
      * @param name name of a user
      * @param new_surname new surname for a user
+     * @return 1 if a surname was updated successfully, otherwise 0
      */
-    public void updateSurname(String name, String new_surname) {
+    public int updateSurname(String name, String new_surname) {
+        int rowCount=0;
         String SQL = "UPDATE gazinform_users "
                 + "SET surname = ?"
                 + "WHERE name = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
             pstmt.setString(1, new_surname);
             pstmt.setString(2, name);
-            pstmt.executeUpdate();
+            rowCount = pstmt.executeUpdate();
             LOGGER.info("The user surname successfully updated: " + name + " " + new_surname);
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage());
         }
+        return rowCount;
     }
 }

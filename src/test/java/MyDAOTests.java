@@ -26,7 +26,9 @@ public class MyDAOTests {
     public void addAndShowUserTest() {
         clearTable(dao.getConnection());
         User expected = new User("Maksim", "Smolencev");
-        dao.addUser(expected);
+        int result = dao.addUser(expected);
+        assertEquals(1, result);
+
         Optional<User> actual1 = dao.findUserByName("Maksim");
         assertEquals(expected, actual1.get());
 
@@ -42,8 +44,12 @@ public class MyDAOTests {
     public void updateSurnameAndShowUserTest() {
         clearTable(dao.getConnection());
         User initial = new User("Alina", "Kvochkina");
-        dao.addUser(initial);
-        dao.updateSurname("Alina", "Kasparova");
+        int result = dao.addUser(initial);
+        assertEquals(1, result);
+
+        result = dao.updateSurname("Alina", "Kasparova");
+        assertEquals(1, result);
+
         Optional<User> actual = dao.findUserByName("Alina");
         User expected = new User("Alina", "Kasparova");
         assertEquals(expected, actual.get());
