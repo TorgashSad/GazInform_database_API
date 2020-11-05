@@ -1,5 +1,6 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
 import java.sql.*;
 
@@ -38,8 +39,7 @@ public class MyDAO {
             conn = DriverManager.getConnection(url, user, password);
             LOGGER.info("Connected to database successfully.");
         } catch (SQLException e) {
-            LOGGER.error("Error: connection to database wasn't established", e);
-            System.out.println(e.getMessage());
+            LOGGER.error("Error: connection to database wasn't established", e.getMessage());
         }
         connection = conn;
     }
@@ -51,14 +51,15 @@ public class MyDAO {
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
             pstmt.executeUpdate();
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            LOGGER.error(ex.getMessage());
         }
     }
     /**
      * Add a new user into the table gazinform_users
-     * @param user a User class object
+     * @param user a not null User class object
      */
     public void addUser(User user) {
+        Assert.assertNotNull(user);
         String SQL = "INSERT INTO gazinform_users(name, surname) "
                 + "VALUES(?,?)";
         try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
@@ -67,13 +68,14 @@ public class MyDAO {
             pstmt.executeUpdate();
         }
         catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            LOGGER.error(ex.getMessage());
         }
     }
     /**
      * Finds a user by its user name
      * @param name the name of the user
-     * @return a LinkedHashMap, where keys a column names and values correspond to a user found
+     * @return a User object corresponding to a user found
+     * or null if no user was found
      */
     public User findUserByName(String name) {
         String SQL = "SELECT * "
@@ -87,7 +89,7 @@ public class MyDAO {
             rs.next();
             user = new User(rs.getString(rsmd.getColumnName(1)), rs.getString(rsmd.getColumnName(2)));
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            LOGGER.error(ex.getMessage());
         }
         return user;
     }
@@ -106,7 +108,7 @@ public class MyDAO {
             pstmt.executeUpdate();
             LOGGER.info("The user surname successfully updated: " + name + " " + new_surname);
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            LOGGER.error(ex.getMessage());
         }
     }
 
@@ -119,7 +121,7 @@ public class MyDAO {
         try (Statement stmt = connection.createStatement()) {
             rs = stmt.executeQuery(SQL);
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            LOGGER.error(ex.getMessage());
         }
         return rs;
     }

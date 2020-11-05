@@ -60,10 +60,10 @@ public class MyDAOTests {
         User expected = new User("Maksim", "Smolencev");
         dao.addUser(expected);
         Object actual1 = dao.findUserByName("Maksim");
-        assertEquals(actual1, expected);
+        assertEquals(expected, actual1);
 
         Object actual2 = dao.findUserByName("NotMaksim");
-        assertNotEquals(actual2, expected);
+        assertNotEquals(expected, actual2);
     }
 
     /**
@@ -79,7 +79,7 @@ public class MyDAOTests {
         dao.updateSurname("Alina", "Kasparova");
         Object actual = dao.findUserByName("Alina");
         User expected = new User("Alina", "Kasparova");
-        assertEquals(actual, expected);
+        assertEquals(expected, actual);
     }
     /**
      * Returns a table gazinform_users and checks if it is of ResultSet class and not null
