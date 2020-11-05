@@ -1,58 +1,36 @@
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
 import java.sql.*;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * This class implements an API for interaction with a table "gazinform_users" in a database
- * Initially, an instance of a this class must be created with database and user credentials and method
- * connect() executed. Then, other methods are ready for use.
+ * When an instance of a this class is created, it reads the database and user credentials from a
+ * configuration file, automatically creates a connection to a database and becomes fully functional.
+ * Its constructor @throws SQLException if it fails to connect to a database
  */
 public class MyDAO {
     /**
      * Logger initialization
      */
     private static final Logger LOGGER = LogManager.getLogger(MyDAO.class);
-    private final String url;
-    private final String user;
-    private final String password;
+    /**
+     * Path/name of the configuration file
+     */
+    private static final String CONFIGURATION_FILE_NAME = "config.properties";
 
+    @Getter
     private Connection connection;
 
-    public MyDAO(String url, String user, String password) {
-        this.url = url;
-        this.user = user;
-        this.password = password;
-    }
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    /**
-     * Connect to the PostgreSQL database
-     */
-    public void connect() {
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(url, user, password);
-            LOGGER.info("Connected to database successfully.");
-        } catch (SQLException e) {
-            LOGGER.error("Error: connection to database wasn't established", e.getMessage());
-        }
-        connection = conn;
-    }
-    /**
-     * Clears the whole table gazinform_users
-     */
-    public void clearTable() {
-        String SQL = "TRUNCATE gazinform_users";
-        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
-            pstmt.executeUpdate();
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage());
-        }
+    public MyDAO() throws SQLException {
+        Properties properties = Util.readPropertiesFile(CONFIGURATION_FILE_NAME);
+        connection = DriverManager.getConnection(properties.getProperty("postgreSQL_URL"),
+                properties.getProperty("postgreSQL_User"),
+                properties.getProperty("postgreSQL_Password"));
     }
     /**
      * Add a new user into the table gazinform_users
@@ -74,10 +52,9 @@ public class MyDAO {
     /**
      * Finds a user by its user name
      * @param name the name of the user
-     * @return a User object corresponding to a user found
-     * or null if no user was found
+     * @return an Optional of User corresponding to a user found or not
      */
-    public User findUserByName(String name) {
+    public Optional<User> findUserByName(String name) {
         String SQL = "SELECT * "
                 + "FROM gazinform_users "
                 + "WHERE name = ?";
@@ -91,7 +68,7 @@ public class MyDAO {
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage());
         }
-        return user;
+        return Optional.ofNullable(user);
     }
     /**
      * Updates the value of surname column for a user specified by name column value
@@ -110,19 +87,5 @@ public class MyDAO {
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage());
         }
-    }
-
-    /**
-     * Returns the whole table "gazinform_users" as a ResultSet
-     */
-    public ResultSet getTable() {
-        String SQL = "SELECT * FROM gazinform_users";
-        ResultSet rs=null;
-        try (Statement stmt = connection.createStatement()) {
-            rs = stmt.executeQuery(SQL);
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage());
-        }
-        return rs;
     }
 }

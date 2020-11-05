@@ -1,69 +1,37 @@
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
+/**
+ * These tests are for the case when an actual DB is available for connection
+ */
 public class MyDAOTests {
-    /**
-     * Path/name of the configuration file
-     */
-    private static final String CONFIGURATION_FILE_NAME = "config.properties";
-    /**
-     * Logger initialization
-     */
-    private static final Logger LOGGER = LogManager.getLogger(MyDAOTests.class);
 
-    private static final Properties properties = Util.readPropertiesFile(CONFIGURATION_FILE_NAME);
+    private final MyDAO dao=new MyDAO();
 
-    private static final MyDAO dao = new MyDAO(properties.getProperty("postgreSQL_URL"),
-            properties.getProperty("postgreSQL_User"),
-            properties.getProperty("postgreSQL_Password"));
-
-    /**
-     * Checks a proper behavior of MyDAO.connect() method with correct and incorrect DB credentials
-     */
-    @Test
-    public void connectTest() {
-        //Correct credentials
-        MyDAO localDao = new MyDAO(properties.getProperty("postgreSQL_URL"),
-                properties.getProperty("postgreSQL_User"),
-                properties.getProperty("postgreSQL_Password"));
-        localDao.connect();
-        assertNotNull(localDao.getConnection());
-
-        Properties wrongProperties = mock(Properties.class);
-        when(wrongProperties.getProperty("postgreSQL_Password")).thenReturn("wrongpassword");
-        //INCORRECT credentials
-        localDao = new MyDAO(properties.getProperty("postgreSQL_URL"),
-                properties.getProperty("postgreSQL_User"),
-                wrongProperties.getProperty("postgreSQL_Password"));
-        localDao.connect();
-        assertNull(localDao.getConnection());
+    public MyDAOTests() throws SQLException {
     }
+
     /**
      * Adds a user to gazinform_users table and retrieves it back
-     * from the table to check if insert was successful
+     * from the table to check if the insert was successful
      */
     @Test
     public void addAndShowUserTest() {
-        dao.connect();
-        dao.clearTable();
+        clearTable(dao.getConnection());
         User expected = new User("Maksim", "Smolencev");
         dao.addUser(expected);
-        Object actual1 = dao.findUserByName("Maksim");
-        assertEquals(expected, actual1);
+        Optional<User> actual1 = dao.findUserByName("Maksim");
+        assertEquals(expected, actual1.get());
 
-        Object actual2 = dao.findUserByName("NotMaksim");
-        assertNotEquals(expected, actual2);
+        Optional<User> actual2 = dao.findUserByName("NotMaksim");
+        assertFalse(actual2.isPresent());
     }
 
     /**
@@ -72,39 +40,21 @@ public class MyDAOTests {
      */
     @Test
     public void updateSurnameAndShowUserTest() {
-        dao.connect();
-        dao.clearTable();
+        clearTable(dao.getConnection());
         User initial = new User("Alina", "Kvochkina");
         dao.addUser(initial);
         dao.updateSurname("Alina", "Kasparova");
-        Object actual = dao.findUserByName("Alina");
+        Optional<User> actual = dao.findUserByName("Alina");
         User expected = new User("Alina", "Kasparova");
-        assertEquals(expected, actual);
+        assertEquals(expected, actual.get());
     }
     /**
-     * Returns a table gazinform_users and checks if it is of ResultSet class and not null
+     * Clears the whole table gazinform_users
      */
-    @Test
-    public void getTableTest() {
-        dao.connect();
-        dao.clearTable();
-        Object actual = dao.getTable();
-        assertThat(actual, instanceOf(ResultSet.class));
-        assertNotNull(actual);
-    }
-
-    //Supplementary method, may be used or completely removed later
-    public void printRS(ResultSet rs) {
-        LOGGER.info("The full table is:");
-        try {
-        ResultSetMetaData rsmd = rs.getMetaData();
-            for (int i=1; i<=rsmd.getColumnCount();i++)
-                System.out.print(rsmd.getColumnName(i) + "\t");
-            System.out.print("\n");
-            while (rs.next()) {
-                System.out.println(rs.getString("name") + "\t"
-                        + rs.getString("surname"));
-            }
+    private static void clearTable(Connection connection) {
+        String SQL = "TRUNCATE gazinform_users";
+        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
+            pstmt.executeUpdate();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
