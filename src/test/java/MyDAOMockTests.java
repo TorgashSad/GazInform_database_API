@@ -1,7 +1,6 @@
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -12,14 +11,16 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
+/**
+ * These tests are for the case when there is no DB available
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class MyDAOMockTests {
 
     @Mock
     private Connection c;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @Mock
     private PreparedStatement pstmt;
 
     @Mock
