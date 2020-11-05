@@ -25,8 +25,6 @@ public class MyDAOMockTests {
     @Mock
     private ResultSet rs;
 
-
-
     @Mock
     private ResultSetMetaData rsmd;
 
