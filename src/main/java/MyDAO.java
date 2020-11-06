@@ -1,6 +1,5 @@
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.junit.Assert;
 
 import java.sql.*;
@@ -13,11 +12,8 @@ import java.util.Properties;
  * configuration file, automatically creates a connection to a database and becomes fully functional.
  * Its constructor @throws SQLException if it fails to connect to a database
  */
+@Log4j2
 public class MyDAO {
-    /**
-     * Logger initialization
-     */
-    private static final Logger LOGGER = LogManager.getLogger(MyDAO.class);
     /**
      * Path/name of the configuration file
      */
@@ -31,6 +27,7 @@ public class MyDAO {
         connection = DriverManager.getConnection(properties.getProperty("postgreSQL_URL"),
                 properties.getProperty("postgreSQL_User"),
                 properties.getProperty("postgreSQL_Password"));
+        log.info("Database on URL {} was connected successfully", properties.getProperty("postgreSQL_URL"));
     }
     /**
      * Add a new user into the table gazinform_users
@@ -48,8 +45,10 @@ public class MyDAO {
             rowCount = pstmt.executeUpdate();
         }
         catch (SQLException ex) {
-            LOGGER.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
         }
+        if (rowCount==1) log.info("The user successfully added: {} {}.",
+                user.getName(), user.getSurname());
         return rowCount;
     }
     /**
@@ -69,7 +68,7 @@ public class MyDAO {
             rs.next();
             user = new User(rs.getString(rsmd.getColumnName(1)), rs.getString(rsmd.getColumnName(2)));
         } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
         }
         return Optional.ofNullable(user);
     }
@@ -88,10 +87,10 @@ public class MyDAO {
             pstmt.setString(1, new_surname);
             pstmt.setString(2, name);
             rowCount = pstmt.executeUpdate();
-            LOGGER.info("The user surname successfully updated: " + name + " " + new_surname);
         } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
         }
+        if (rowCount==1) log.info("The user surname successfully updated: {} {}.", name, new_surname);
         return rowCount;
     }
 }
