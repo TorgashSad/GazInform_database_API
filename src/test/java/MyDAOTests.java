@@ -13,9 +13,17 @@ import static org.junit.Assert.assertFalse;
  */
 public class MyDAOTests {
 
-    private final MyDAO dao=new MyDAO();
+    private final MyDAO testDAO=new MyDAO();
 
     public MyDAOTests() throws SQLException {
+    }
+
+    /**
+     * Null User is forbidden to add to gazinform_users table
+     */
+    @Test(expected = java.lang.AssertionError.class)
+    public void nullAddUserThrowsException() {
+        testDAO.addUser(null);
     }
 
     /**
@@ -24,15 +32,15 @@ public class MyDAOTests {
      */
     @Test
     public void addAndShowUserTest() {
-        clearTable(dao.getConnection());
+        clearTable(testDAO.getConnection());
         User expected = new User("Maksim", "Smolencev");
-        int result = dao.addUser(expected);
+        int result = testDAO.addUser(expected);
         assertEquals(1, result);
 
-        Optional<User> actual1 = dao.findUserByName("Maksim");
+        Optional<User> actual1 = testDAO.findUserByName("Maksim");
         assertEquals(expected, actual1.get());
 
-        Optional<User> actual2 = dao.findUserByName("NotMaksim");
+        Optional<User> actual2 = testDAO.findUserByName("NotMaksim");
         assertFalse(actual2.isPresent());
     }
 
@@ -42,15 +50,15 @@ public class MyDAOTests {
      */
     @Test
     public void updateSurnameAndShowUserTest() {
-        clearTable(dao.getConnection());
+        clearTable(testDAO.getConnection());
         User initial = new User("Alina", "Kvochkina");
-        int result = dao.addUser(initial);
+        int result = testDAO.addUser(initial);
         assertEquals(1, result);
 
-        result = dao.updateSurname("Alina", "Kasparova");
+        result = testDAO.updateSurname("Alina", "Kasparova");
         assertEquals(1, result);
 
-        Optional<User> actual = dao.findUserByName("Alina");
+        Optional<User> actual = testDAO.findUserByName("Alina");
         User expected = new User("Alina", "Kasparova");
         assertEquals(expected, actual.get());
     }

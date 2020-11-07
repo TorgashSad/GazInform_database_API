@@ -49,11 +49,18 @@ public class MyDAOMockTests {
     @InjectMocks
     private MyDAO testDAO;
 
+    /**
+     * Null User is forbidden to add to gazinform_users table
+     */
     @Test(expected = java.lang.AssertionError.class)
     public void nullAddUserThrowsException() {
         testDAO.addUser(null);
     }
 
+    /**
+     * Adds a user to gazinform_users table and retrieves it back
+     * from the table to check if the insert was successful
+     */
     @Test
     public void addAndShowUserTest() {
         int result = testDAO.addUser(user);
@@ -64,6 +71,10 @@ public class MyDAOMockTests {
         assertEquals(user.getSurname(), actual1.get().getSurname());
     }
 
+    /**
+     * Adds a user to gazinform_users table, updates its surname and retrieves it back
+     * from the table to check if insert and update were successful
+     */
     @Test
     public void addUpdateAndShowUserTest() throws SQLException {
         int result = testDAO.addUser(user);

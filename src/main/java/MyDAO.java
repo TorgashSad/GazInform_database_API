@@ -4,30 +4,25 @@ import org.junit.Assert;
 
 import java.sql.*;
 import java.util.Optional;
-import java.util.Properties;
 
 /**
  * This class implements an API for interaction with a table "gazinform_users" in a database
- * When an instance of a this class is created, it reads the database and user credentials from a
- * configuration file, automatically creates a connection to a database and becomes fully functional.
+ * When an instance of a this class is created, it reads the database and user credentials
+ * from system properties (injected through maven settings.xml by surefire plugin),
+ * automatically creates a connection to a database and becomes fully functional.
  * Its constructor @throws SQLException if it fails to connect to a database
+ * A new MyDAO instance for each thread in a multi-thread environment is highly reccomended
  */
 @Log4j2
 public class MyDAO {
-    /**
-     * Path/name of the configuration file
-     */
-    private static final String CONFIGURATION_FILE_NAME = "config.properties";
-
     @Getter
     private Connection connection;
 
     public MyDAO() throws SQLException {
-        Properties properties = Util.readPropertiesFile(CONFIGURATION_FILE_NAME);
-        connection = DriverManager.getConnection(properties.getProperty("postgreSQL_URL"),
-                properties.getProperty("postgreSQL_User"),
-                properties.getProperty("postgreSQL_Password"));
-        log.info("Database on URL {} was connected successfully", properties.getProperty("postgreSQL_URL"));
+        connection = DriverManager.getConnection(System.getProperty("postgreSQL_URL"),
+                System.getProperty("postgreSQL_User"),
+                System.getProperty("postgreSQL_Password"));
+        log.info("Database on URL {} was connected successfully", System.getProperty("postgreSQL_URL"));
     }
     /**
      * Add a new user into the table gazinform_users
