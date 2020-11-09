@@ -1,3 +1,5 @@
+package com.torgashsad.gazinform_api;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

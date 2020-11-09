@@ -1,3 +1,5 @@
+import com.torgashsad.gazinform_api.MyDAO;
+import com.torgashsad.gazinform_api.User;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -16,14 +18,6 @@ public class MyDAOTests {
     private final MyDAO testDAO=new MyDAO();
 
     public MyDAOTests() throws SQLException {
-    }
-
-    /**
-     * Null User is forbidden to add to gazinform_users table
-     */
-    @Test(expected = java.lang.AssertionError.class)
-    public void nullAddUserThrowsException() {
-        testDAO.addUser(null);
     }
 
     /**

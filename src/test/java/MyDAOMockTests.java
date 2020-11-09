@@ -1,3 +1,5 @@
+import com.torgashsad.gazinform_api.MyDAO;
+import com.torgashsad.gazinform_api.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,14 +50,6 @@ public class MyDAOMockTests {
 
     @InjectMocks
     private MyDAO testDAO;
-
-    /**
-     * Null User is forbidden to add to gazinform_users table
-     */
-    @Test(expected = java.lang.AssertionError.class)
-    public void nullAddUserThrowsException() {
-        testDAO.addUser(null);
-    }
 
     /**
      * Adds a user to gazinform_users table and retrieves it back

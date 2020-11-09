@@ -1,6 +1,8 @@
+package com.torgashsad.gazinform_api;
+
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import org.junit.Assert;
 
 import java.sql.*;
 import java.util.Optional;
@@ -29,12 +31,11 @@ public class MyDAO {
      * @param user a not null User class object
      * @return 1 if a user was added successfully, otherwise 0
      */
-    public int addUser(User user) {
-        Assert.assertNotNull(user);
+    public int addUser(@NonNull User user) {
         int rowCount=0;
-        String SQL = "INSERT INTO gazinform_users(name, surname) "
+        String sql = "INSERT INTO gazinform_users(name, surname) "
                 + "VALUES(?,?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getSurname());
             rowCount = pstmt.executeUpdate();
@@ -42,8 +43,8 @@ public class MyDAO {
         catch (SQLException ex) {
             log.error(ex.getMessage(), ex);
         }
-        if (rowCount==1) log.info("The user successfully added: {} {}.",
-                user.getName(), user.getSurname());
+        if (rowCount==1)
+            log.info("The user successfully added: {} {}.", user.getName(), user.getSurname());
         return rowCount;
     }
     /**
@@ -52,40 +53,41 @@ public class MyDAO {
      * @return an Optional of User corresponding to a user found or not
      */
     public Optional<User> findUserByName(String name) {
-        String SQL = "SELECT * "
+        String sql = "SELECT * "
                 + "FROM gazinform_users "
                 + "WHERE name = ?";
-        User user = null;
-        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, name);
             ResultSet rs = pstmt.executeQuery();
             ResultSetMetaData rsmd = rs.getMetaData();
             rs.next();
-            user = new User(rs.getString(rsmd.getColumnName(1)), rs.getString(rsmd.getColumnName(2)));
+            return Optional.of(new User(rs.getString(rsmd.getColumnName(1)),
+                    rs.getString(rsmd.getColumnName(2))));
         } catch (SQLException ex) {
             log.error(ex.getMessage(), ex);
         }
-        return Optional.ofNullable(user);
+        return Optional.empty();
     }
     /**
      * Updates the value of surname column for a user specified by name column value
      * @param name name of a user
-     * @param new_surname new surname for a user
+     * @param newSurname new surname for a user
      * @return 1 if a surname was updated successfully, otherwise 0
      */
-    public int updateSurname(String name, String new_surname) {
+    public int updateSurname(String name, String newSurname) {
         int rowCount=0;
-        String SQL = "UPDATE gazinform_users "
+        String sql = "UPDATE gazinform_users "
                 + "SET surname = ?"
                 + "WHERE name = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(SQL)) {
-            pstmt.setString(1, new_surname);
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, newSurname);
             pstmt.setString(2, name);
             rowCount = pstmt.executeUpdate();
         } catch (SQLException ex) {
             log.error(ex.getMessage(), ex);
         }
-        if (rowCount==1) log.info("The user surname successfully updated: {} {}.", name, new_surname);
+        if (rowCount==1)
+            log.info("The user surname successfully updated: {} {}.", name, newSurname);
         return rowCount;
     }
 }
